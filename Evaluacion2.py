@@ -190,13 +190,13 @@ def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_co
         section.left_margin = Cm(2.5)
         section.right_margin = Cm(2.5)
 
-    # Header
+    # encabezado de la pagina
     header = document.sections[0].header
     paragraph = header.paragraphs[0]
     run = paragraph.add_run()
     run.add_picture("header.png", width=Cm(16)) 
 
-    # Title
+    # Titulo
     title = document.add_heading('CONTRATO DE TRABAJO', level=1)
     title.alignment = 1  
 
@@ -232,10 +232,10 @@ def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_co
         "a la fecha de inicio mencionada anteriormente.\n\n"
     )
 
-    # Signature placeholders
+    # firmas
     table = document.add_table(rows=2, cols=2)
 
-    # Trabajador
+    # empleado
     cell_trabajador = table.cell(0, 0)
     cell_trabajador.text = '\n\n\n\n\n\n\n\n\n_______________________________\nFirma del Trabajador\n' + nombre_completo
     cell_trabajador_rut = table.cell(1, 0)
@@ -251,15 +251,11 @@ def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_co
     cell_representante_rut = table.cell(1, 1)
     cell_representante_rut.text = 'RUT: 12345678-9'
 
-    # Footer
+    # pie de la pagina
     footer = document.sections[0].footer
     paragraph = footer.paragraphs[0]
     run = paragraph.add_run()
     run.add_picture("footer1.png", width=Cm(16))  
-
-    ###########################################
-    ###########  SAVE DOCUMENT   ###########
-    ###########################################
 
     document.save(f"{nombre_completo}_contrato.docx")
     print(f"El contrato se ha guardado como {nombre_completo}_contrato.docx")
