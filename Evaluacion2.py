@@ -1,5 +1,6 @@
 import sqlite3 as sql
 import pandas as pd 
+import matplotlib.pyplot as plt
 from unidecode import unidecode
 from docx import Document
 from docx.shared import  Pt,Cm,Mm
@@ -22,6 +23,44 @@ print (df)
 
 #Definicion del la funcion filtro
 def filtro(df: pd.DataFrame):
+    graficos_barra = input("¿Le gustaria que le mostremos un grafico de los sueldos en base a las profesiones? (si/no): ").strip().lower()
+    
+    if graficos_barra == 'si':
+        #Calcular el sueldo promedio por profesion
+        promedio_sueldo_prof = df.groupby('profesion')['Sueldo'].mean().reset_index()
+
+        #Crear gráfico
+        plt.figure(figsize=(10, 6))
+        plt.bar(promedio_sueldo_prof['profesion'], promedio_sueldo_prof['Sueldo'], color='skyblue')
+        plt.xlabel('Profesion')
+        plt.ylabel('Promedio Sueldo')
+        plt.title('Promedio de Sueldo x Profesión')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        
+        #Mostrar el gráfico
+        plt.show()
+    else:
+        print("Ok, no hay problema.")
+    
+    graficos_torta = input("Le gustaria que le mostremos un grafico de torta de la distribución de profesiones? (si/no): ").strip().lower()
+    
+    if graficos_torta == 'si':
+        #Calcular la distribucion de profesiones
+        distribucion_prof = df['profesion'].value_counts()
+        
+        #Creamos grafico de torta
+        plt.figure(figsize=(4, 8))    
+        plt.pie(distribucion_prof, labels=distribucion_prof.index, autopct='%1.1f%%', startangle=140)
+        plt.title('Distribucion de Profesiones')
+        plt.axis('equal')
+        
+        #Mostrar el grafico
+        plt.show()
+    else:
+        print("Ok, sigamos...")
+    
+    
     click = input("¿Como desea buscar a la persona?(Nombre, rut, nacionalidad, sueldo, rol): ").strip().lower()
     
     if click == "nombre":
@@ -280,3 +319,18 @@ def multiples_contratos(df: pd.DataFrame, inicio:int, final:int):
             persona_selc['profesion'],
             str(persona_selc['Sueldo'])
         )
+
+#Calcular el sueldo promedio por profesion
+promedio_sueldo_prof = df.groupby('profesion')['Sueldo'].mean().reset_index()
+
+#Crear gráfico
+plt.figure(figsize=(10, 6))
+plt.bar(promedio_sueldo_prof['profesion'], promedio_sueldo_prof['Sueldo'], color='skyblue')
+plt.xlabel('Profesion')
+plt.ylabel('Promedio Sueldo')
+plt.title('Promedio de Sueldo x Profesión')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+
+#Mostrar el gráfico
+plt.show()
