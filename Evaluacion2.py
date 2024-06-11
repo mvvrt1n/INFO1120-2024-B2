@@ -43,7 +43,7 @@ def filtro(df: pd.DataFrame):
     else:
         print("Ok, no hay problema.")
     
-    graficos_torta = input("Le gustaria que le mostremos un grafico de torta de la distribución de profesiones? (si/no): ").strip().lower()
+    graficos_torta = input("¿Le gustaria que le mostremos un grafico de torta de la distribución de profesiones? (si/no): ").strip().lower()
     
     if graficos_torta == 'si':
         #Calcular la distribucion de profesiones
@@ -59,8 +59,27 @@ def filtro(df: pd.DataFrame):
         plt.show()
     else:
         print("Ok, sigamos...")
-    
-    
+        
+    graficos_conteo = input("¿Le gustaría que le mostremos un grafico de conteo de profesionales por nacionalidad? (si/no): ").strip().lower()
+
+    if graficos_conteo == 'si':
+        #Calcular el conteo de profesionales por nacionalidad
+        conteo_nacionalidad = df['nacionalidad'].value_counts()
+        
+        #Crear grafico de conteo
+        plt.figure(figsize=(10, 6))
+        plt.bar(conteo_nacionalidad.index, conteo_nacionalidad, color='lightgreen')
+        plt.xlabel('Nacionalidad')
+        plt.ylabel('Cantidad de Profesionales')
+        plt.title('Conteo de Profesionales por Nacionalidad')
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
+        
+        #Mostramos Grafico
+        plt.show()
+    else:
+        print("Vale, continua con la búsqueda.")        
+        
     click = input("¿Como desea buscar a la persona?(Nombre, rut, nacionalidad, sueldo, rol): ").strip().lower()
     
     if click == "nombre":
@@ -319,18 +338,4 @@ def multiples_contratos(df: pd.DataFrame, inicio:int, final:int):
             persona_selc['profesion'],
             str(persona_selc['Sueldo'])
         )
-
-#Calcular el sueldo promedio por profesion
-promedio_sueldo_prof = df.groupby('profesion')['Sueldo'].mean().reset_index()
-
-#Crear gráfico
-plt.figure(figsize=(10, 6))
-plt.bar(promedio_sueldo_prof['profesion'], promedio_sueldo_prof['Sueldo'], color='skyblue')
-plt.xlabel('Profesion')
-plt.ylabel('Promedio Sueldo')
-plt.title('Promedio de Sueldo x Profesión')
-plt.xticks(rotation=45, ha='right')
-plt.tight_layout()
-
-#Mostrar el gráfico
-plt.show()
+multiples_contratos(df, 0, 5)
