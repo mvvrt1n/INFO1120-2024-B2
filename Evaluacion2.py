@@ -8,8 +8,8 @@ data = sql.connect('db_personas.db')
 cursor = data.cursor()  
 comandoon = '''
 Select p.rut, p.nombre_completo, p.nacionalidad, s.Rol, s.Sueldo, p.fecha_ingreso, p.residencia, p.fecha_de_nacimiento, p.profesion
-FROM personas p
-INNER JOIN Salarios s 
+FROM Salarios s
+INNER JOIN personas p
 ON p.id_rol = s.id_salarios
 '''
 cursor.execute(comandoon)
@@ -260,3 +260,23 @@ def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_co
     document.save(f"{nombre_completo}_contrato.docx")
     print(f"El contrato se ha guardado como {nombre_completo}_contrato.docx")
 print(filtro(df))
+
+
+def multiples_contratos(df: pd.DataFrame, inicio:int, final:int):
+    if inicio < 0 or final > len(df):
+        print("Por favor, ingrese un rango válido")
+        return
+    
+    for i in range (inicio, final):
+        persona_selc  = df.iloc[i]
+        contrato1(
+            persona_selc['Fecha_ingreso'],
+            persona_selc['Rol'],
+            persona_selc['residencia'],
+            persona_selc['rut'],
+            persona_selc['nombre_completo'],
+            persona_selc['nacionalidad'],
+            persona_selc['fech_de_nacimiento'],
+            persona_selc['profesion'],
+            str(persona_selc['Sueldo'])
+        )
