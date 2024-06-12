@@ -8,11 +8,12 @@ from docx.shared import  Pt,Cm,Mm
 data = sql.connect('db_personas.db')
 cursor = data.cursor()  
 comandoon = '''
-Select p.rut, p.nombre_completo, p.nacionalidad, s.Rol, s.Sueldo, p.fecha_ingreso, p.residencia, p.fecha_de_nacimiento, p.profesion
+SELECT p.rut, p.nombre_completo, p.nacionalidad, s.Rol, s.Sueldo, p.fecha_ingreso, p.residencia, p.fecha_de_nacimiento, p.profesion
 FROM Salarios s
 INNER JOIN personas p
 ON p.id_rol = s.id_salarios
 '''
+
 cursor.execute(comandoon)
 data = cursor.fetchall()  
 #creacion del dataframe 
@@ -20,32 +21,123 @@ columnas = [i[0] for i in cursor.description]
 df = pd.DataFrame(data, columns=columnas)
 
 print (df)
+def contrato(perso_selc):
+    fecha_ingreso = perso_selc['fecha_ingreso']
+    rol = perso_selc['Rol']
+    residencia = perso_selc['residencia']
+    rut = perso_selc['rut']
+    nombre_completo = perso_selc['nombre_completo']
+    nacionalidad = perso_selc['nacionalidad']
+    fecha_nac = perso_selc['fecha_de_nacimiento']
+    profesion = perso_selc['profesion']
+    sueldo = perso_selc['Sueldo']
+    contrato1(fecha_ingreso, rol, residencia, rut, nombre_completo, nacionalidad, fecha_nac, profesion, str(sueldo))
+    print(f"Se ha generado el contrato de {nombre_completo} con éxito")
 
+def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_completo: str, nacionalidad: str, fecha_nac: str, profesion: str, sueldo: str) -> str:
+
+    document = Document()
+
+    font = document.styles['Normal'].font
+    font.name = 'Arial'
+    font.size = Pt(10)
+
+    sections = document.sections
+    for section in sections:
+        section.page_height = Cm(29.7)  
+        section.page_width = Cm(21.0)
+        section.top_margin = Cm(2.5)
+        section.bottom_margin = Cm(2.5)
+        section.left_margin = Cm(2.5)
+        section.right_margin = Cm(2.5)
+
+    # encabezado de la pagina
+    header = document.sections[0].header
+    paragraph = header.paragraphs[0]
+    run = paragraph.add_run()
+    run.add_picture("header.png", width=Cm(16)) 
+
+    # Titulo
+    title = document.add_heading('CONTRATO DE TRABAJO', level=1)
+    title.alignment = 1  
+
+    
+    document.add_paragraph(
+        f"En Santiago de Chile, a {fecha_ingreso}, entre {nombre_completo}, de nacionalidad {nacionalidad}, fecha de nacimiento {fecha_nac},"
+        f"con domicilio en {residencia}, RUT {rut}, en adelante \"el Trabajador\", por una parte; y por la otra, la Empresa XXX, RUT 12345678-9, "
+        f"representada por el Sr. XXXXXXXX, ambos con domicilio en Santiago de Chile, se ha convenido el siguiente Contrato de Trabajo: \n\n"
+    )
+
+    document.add_paragraph(
+        f"PRIMERO: Por el presente contrato, el Trabajador se compromete y obliga a prestar servicios personales bajo dependencia y subordinación, "
+        f"de acuerdo con las instrucciones y órdenes impartidas por la Empresa, desempeñándose en el cargo de {rol}.\n\n"
+    )
+
+    document.add_paragraph(
+        f"SEGUNDO: La Empresa se compromete a pagar al Trabajador por sus servicios, una remuneración mensual de {sueldo} pesos chilenos, "
+        f"en forma de sueldo base. Este pago se realizará en moneda nacional y en las fechas establecidas por la Empresa.\n\n"
+    )
+
+    document.add_paragraph(
+        "TERCERO: El presente contrato tendrá una duración indefinida, comenzando el día de la firma del mismo. No obstante, "
+        "cualquiera de las partes podrá poner término a este contrato de acuerdo con las causales establecidas en el Código del Trabajo.\n\n"
+    )
+
+    document.add_paragraph(
+        "CUARTO: En todo lo no previsto en este contrato, se estará a lo dispuesto en el Código del Trabajo y demás leyes complementarias y "
+        "reglamentarias vigentes en la República de Chile.\n\n"
+    )
+
+    document.add_paragraph(
+        "Leído el presente contrato y conformes las partes, lo firman en dos ejemplares del mismo tenor y a un solo efecto, en Santiago, "
+        "a la fecha de inicio mencionada anteriormente.\n\n"
+    )
+
+    # firmas
+    table = document.add_table(rows=2, cols=2)
+
+    # empleado
+    cell_trabajador = table.cell(0, 0)
+    cell_trabajador.text = '\n\n\n\n\n\n\n\n\n_______________________________\nFirma del Trabajador\n' + nombre_completo
+    cell_trabajador_rut = table.cell(1, 0)
+    cell_trabajador_rut.text = 'RUT: ' + rut
+
+    # Representante
+    cell_representante = table.cell(0, 1)
+    paragraph = cell_representante.paragraphs[0]
+    run = paragraph.add_run()
+    run.add_picture("firma.png", width=Cm(3))  # Adjust size as needed
+    paragraph.add_run("_______________________________\nFirma del Representante de la Empresa\nNombre del Representante")
+
+    cell_representante_rut = table.cell(1, 1)
+    cell_representante_rut.text = 'RUT: 12345678-9'
+
+    # pie de la pagina
+    footer = document.sections[0].footer
+    paragraph = footer.paragraphs[0]
+    run = paragraph.add_run()
+    run.add_picture("footer1.png", width=Cm(16))  
+
+    document.save(f"{nombre_completo}_contrato.docx")
+    print(f"El contrato se ha guardado como {nombre_completo}_contrato.docx")
+    
 def multiples_contratos(df: pd.DataFrame, inicio:int, final:int):
+    #anadir una entrada
+    rangw = input("¿Desea generar contratos para un rango de personas? (si/no): ").strip().lower()
+    if rangw == 'si':
+        inicio = int(input("Ingrese el indice de la primera persona: "))
+        final = int(input("Ingrese el indice de la última persona: "))
+        if inicio < 0 or final > len(df):
+            print("Por favor, ingrese un rango válido")
+            return
     
-    if inicio < 0 or final > len(df):
-        print("Por favor, ingrese un rango válido")
-        return
-    
-    for i in range (inicio, final):
-        persona_selc  = df.iloc[i]
-        contrato1(
-            persona_selc['fecha_ingreso'],
-            persona_selc['Rol'],
-            persona_selc['residencia'],
-            persona_selc['rut'],
-            persona_selc['nombre_completo'],
-            persona_selc['nacionalidad'],
-            persona_selc['fech_de_nacimiento'],
-            persona_selc['profesion'],
-            str(persona_selc['Sueldo'])
-        )
+        for i in range (inicio, final):
+            persona_selc  = df.iloc[i]
+            contrato(persona_selc)
+    else:
+        print("Gracias por usar el programa")
 
-pregunta_inicio = input("¿Hola, que te gustaria hacer? \n 1: Usar el filtro \n 2: Crear multiples contratos \n 3: Ver Graficos \n Ingrese un número según su preferencia 1, 2 o 3: ")
-
-if pregunta_inicio == '1':
-    #Definicion del la funcion filtro
-    def filtro(df: pd.DataFrame):    
+def filtro(df: pd.DataFrame):    
         click = input("¿Como desea buscar a la persona?(Nombre, rut, nacionalidad, sueldo, rol): ").strip().lower()
         
         if click == "nombre":
@@ -185,6 +277,12 @@ if pregunta_inicio == '1':
             print("Opción no válida")
             filtro(df)
 
+pregunta_inicio = input("¿Hola, que te gustaria hacer? \n 1: Usar el filtro \n 2: Crear multiples contratos \n 3: Ver Graficos \n Ingrese un número según su preferencia 1, 2 o 3: ")
+
+if pregunta_inicio == '1':
+    
+    filtro(df)
+
 if pregunta_inicio == '2':
     multiples_contratos(df, 1, 1)
 
@@ -262,103 +360,3 @@ if pregunta_inicio == '3':
         else:
             print('Por favor, ingrese una respuesta válida "(si/no)"')
 
-
-def contrato(perso_selc):
-    fecha_ingreso = perso_selc['fecha_ingreso']
-    rol = perso_selc['Rol']
-    residencia = perso_selc['residencia']
-    rut = perso_selc['rut']
-    nombre_completo = perso_selc['nombre_completo']
-    nacionalidad = perso_selc['nacionalidad']
-    fecha_nac = perso_selc['fecha_de_nacimiento']
-    profesion = perso_selc['profesion']
-    sueldo = perso_selc['Sueldo']
-    contrato1(fecha_ingreso, rol, residencia, rut, nombre_completo, nacionalidad, fecha_nac, profesion, str(sueldo))
-    print(f"Se ha generado el contrato de {nombre_completo} con éxito")
-
-def contrato1(fecha_ingreso: str, rol: str, residencia: str, rut: str, nombre_completo: str, nacionalidad: str, fecha_nac: str, profesion: str, sueldo: str) -> str:
-    document = Document()
-
-    font = document.styles['Normal'].font
-    font.name = 'Arial'
-    font.size = Pt(10)
-
-    sections = document.sections
-    for section in sections:
-        section.page_height = Cm(29.7)  
-        section.page_width = Cm(21.0)
-        section.top_margin = Cm(2.5)
-        section.bottom_margin = Cm(2.5)
-        section.left_margin = Cm(2.5)
-        section.right_margin = Cm(2.5)
-
-    # encabezado de la pagina
-    header = document.sections[0].header
-    paragraph = header.paragraphs[0]
-    run = paragraph.add_run()
-    run.add_picture("header.png", width=Cm(16)) 
-
-    # Titulo
-    title = document.add_heading('CONTRATO DE TRABAJO', level=1)
-    title.alignment = 1  
-
-    
-    document.add_paragraph(
-        f"En Santiago de Chile, a {fecha_ingreso}, entre {nombre_completo}, de nacionalidad {nacionalidad}, fecha de nacimiento {fecha_nac},"
-        f"con domicilio en {residencia}, RUT {rut}, en adelante \"el Trabajador\", por una parte; y por la otra, la Empresa XXX, RUT 12345678-9, "
-        f"representada por el Sr. XXXXXXXX, ambos con domicilio en Santiago de Chile, se ha convenido el siguiente Contrato de Trabajo: \n\n"
-    )
-
-    document.add_paragraph(
-        f"PRIMERO: Por el presente contrato, el Trabajador se compromete y obliga a prestar servicios personales bajo dependencia y subordinación, "
-        f"de acuerdo con las instrucciones y órdenes impartidas por la Empresa, desempeñándose en el cargo de {rol}.\n\n"
-    )
-
-    document.add_paragraph(
-        f"SEGUNDO: La Empresa se compromete a pagar al Trabajador por sus servicios, una remuneración mensual de {sueldo} pesos chilenos, "
-        f"en forma de sueldo base. Este pago se realizará en moneda nacional y en las fechas establecidas por la Empresa.\n\n"
-    )
-
-    document.add_paragraph(
-        "TERCERO: El presente contrato tendrá una duración indefinida, comenzando el día de la firma del mismo. No obstante, "
-        "cualquiera de las partes podrá poner término a este contrato de acuerdo con las causales establecidas en el Código del Trabajo.\n\n"
-    )
-
-    document.add_paragraph(
-        "CUARTO: En todo lo no previsto en este contrato, se estará a lo dispuesto en el Código del Trabajo y demás leyes complementarias y "
-        "reglamentarias vigentes en la República de Chile.\n\n"
-    )
-
-    document.add_paragraph(
-        "Leído el presente contrato y conformes las partes, lo firman en dos ejemplares del mismo tenor y a un solo efecto, en Santiago, "
-        "a la fecha de inicio mencionada anteriormente.\n\n"
-    )
-
-    # firmas
-    table = document.add_table(rows=2, cols=2)
-
-    # empleado
-    cell_trabajador = table.cell(0, 0)
-    cell_trabajador.text = '\n\n\n\n\n\n\n\n\n_______________________________\nFirma del Trabajador\n' + nombre_completo
-    cell_trabajador_rut = table.cell(1, 0)
-    cell_trabajador_rut.text = 'RUT: ' + rut
-
-    # Representante
-    cell_representante = table.cell(0, 1)
-    paragraph = cell_representante.paragraphs[0]
-    run = paragraph.add_run()
-    run.add_picture("firma.png", width=Cm(3))  # Adjust size as needed
-    paragraph.add_run("_______________________________\nFirma del Representante de la Empresa\nNombre del Representante")
-
-    cell_representante_rut = table.cell(1, 1)
-    cell_representante_rut.text = 'RUT: 12345678-9'
-
-    # pie de la pagina
-    footer = document.sections[0].footer
-    paragraph = footer.paragraphs[0]
-    run = paragraph.add_run()
-    run.add_picture("footer1.png", width=Cm(16))  
-
-    document.save(f"{nombre_completo}_contrato.docx")
-    print(f"El contrato se ha guardado como {nombre_completo}_contrato.docx")
-print(df())
